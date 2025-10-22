@@ -1,6 +1,10 @@
-cohere==4.32
-chromadb==0.3.26
-Flask==2.3.2
-langchain==0.0.195
-langchainplus-sdk==0.0.8
+chromadb==1.1.0
+cohere==5.18.0
+Flask==3.1.2
+langchain==0.3.27
+langchain-chroma==0.2.6
+langchain-cohere==0.4.6
+langchain-community==0.3.30
+langchain-core==0.3.77
 gunicorn==19.3.0
+setuptools==80.9.0
