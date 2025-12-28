@@ -14,42 +14,59 @@ app = Flask(__name__)
 llm = ChatCohere(cohere_api_key=os.environ.get("COHERE_API_KEY"))
 memory = ConversationBufferMemory(return_messages=True)
 
+# Global variables for lazy loading
+qa = None
+vectordb = None
+
 def load_db():
     """
-    Load the Chroma database with CohereEmbeddings.
+    Lazy load the Chroma database with CohereEmbeddings.
     Returns a RetrievalQA chain for question answering.
     """
+    global qa
+    if qa is not None:
+        return qa
+    
     try:
+        print("Loading Chroma database...")
         embeddings = CohereEmbeddings(
             cohere_api_key=os.environ["COHERE_API_KEY"],
             model="embed-english-light-v2.0"
         )
-        vectordb = Chroma(persist_directory='content/db', embedding_function=embeddings)
+        vectordb_local = Chroma(persist_directory='content/db', embedding_function=embeddings)
         llm_kb = ChatCohere(cohere_api_key=os.environ["COHERE_API_KEY"])
         qa = RetrievalQA.from_chain_type(
             llm=llm_kb,
             chain_type="stuff",
-            retriever=vectordb.as_retriever(search_kwargs={"k": 3}),
+            retriever=vectordb_local.as_retriever(search_kwargs={"k": 3}),
             return_source_documents=True
         )
+        print("Database loaded successfully")
         return qa
     except Exception as e:
         print("Error loading database:", e)
         return None
 
-# Load the knowledge base
-qa = load_db()
-
-# Load vectordb separately for search functionality
-try:
-    embeddings_for_search = CohereEmbeddings(
-        cohere_api_key=os.environ.get("COHERE_API_KEY"),
-        model="embed-english-light-v2.0"
-    )
-    vectordb = Chroma(persist_directory='content/db', embedding_function=embeddings_for_search)
-except Exception as e:
-    print(f"Error loading vectordb for search: {e}")
-    vectordb = None
+def load_vectordb():
+    """
+    Lazy load vectordb for search functionality.
+    """
+    global vectordb
+    if vectordb is not None:
+        return vectordb
+    
+    try:
+        print("Loading vectordb for search...")
+        embeddings_for_search = CohereEmbeddings(
+            cohere_api_key=os.environ.get("COHERE_API_KEY"),
+            model="embed-english-light-v2.0"
+        )
+        vectordb = Chroma(persist_directory='content/db', embedding_function=embeddings_for_search)
+        print("Vectordb loaded successfully")
+        return vectordb
+    except Exception as e:
+        print(f"Error loading vectordb for search: {e}")
+        return None
 
 def answer_from_knowledgebase(message):
     """
@@ -57,9 +74,10 @@ def answer_from_knowledgebase(message):
     Returns the answer from the documents.
     """
     try:
-        if qa is None:
+        qa_chain = load_db()
+        if qa_chain is None:
             return "Knowledge base not available. Please ensure the 'content/db' folder exists."
-        res = qa.invoke({"query": message})
+        res = qa_chain.invoke({"query": message})
         return res['result']
     except Exception as e:
         return f"Error: {str(e)}"
@@ -70,11 +88,12 @@ def search_knowledgebase(message):
     Returns formatted source documents as a string.
     """
     try:
-        if vectordb is None:
+        vdb = load_vectordb()
+        if vdb is None:
             return "Knowledge base not available. Please ensure the 'content/db' folder exists."
         
         # Use similarity search to get relevant documents
-        docs = vectordb.similarity_search(message, k=3)
+        docs = vdb.similarity_search(message, k=3)
         
         if not docs:
             return "No sources found."
