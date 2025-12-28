@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Thinkbot</title>
+    <title>Ziggy's ChatBot - Quantum Computing Assistant</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/style.css">
 </head>
 <body>
     <div class="container mt-5">
+        <!-- Header Section -->
+        <div class="header-section text-center mb-4">
+            <h1 class="chatbot-title">⚛️ Ziggy's ChatBot</h1>
+            <p class="chatbot-subtitle">Your Quantum Computing Knowledge Assistant</p>
+        </div>
+        
         <div id="chat-container" class="chat-container"></div>
-        <div class="row">
-            <div class="col">
-                <div>
+        
+        <!-- Controls Section -->
+        <div class="controls-section mt-3">
+            <div class="row mb-2">
+                <div class="col-md-8">
+                    <label for="function-select" class="control-label">Select Mode:</label>
                     <select class="form-control" id="function-select">
-                        <option value="answer">Answer as Chatbot</option>
+                        <option value="answer">💬 Answer as Chatbot</option>
+                        <option value="kbanswer">📚 Answer from Knowledgebase</option>
+                        <option value="search">🔍 Search Knowledgebase</option>
                     </select>
                 </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button id="clear-btn" class="btn btn-secondary btn-block">🗑️ Clear Chat</button>
+                </div>
             </div>
-            <div class="col">
-                <div class="input-group-append">
-                    <input type="text" id="message-input" placeholder="Type your message here...">
-                    <button id="send-btn" class="btn btn-primary">Send</button>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group">
+                        <input type="text" id="message-input" class="form-control" placeholder="Type your message here..." aria-label="Message input">
+                        <div class="input-group-append">
+                            <button id="send-btn" class="btn btn-primary">Send 🚀</button>
+                        </div>
+                    </div>
+                    <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                        <span class="loading-text">⚛️ Ziggy is thinking...</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="static/main.js"></script>
 </body>
 </html>
